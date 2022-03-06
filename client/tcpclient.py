@@ -17,48 +17,61 @@ import sys
 
 ############## Beginning of Part 1 ##############
 # TODO: define a buffer size for the message to be read from the TCP socket
-BUFFER = 
+BUFFER = 4096
 
 
 def part1 ():
-    print("********** PART 1 **********")
-    # TODO: fill in the IP address of the host and the port number
-    HOST = 
-    PORT = 
+    # TODO: fill in the hostname and port number
+    hostname = 'localhost'
+    PORT = 8000
+
+    # A dummy message (in bytes) to test the code
+    message = "Hello World"
+
+    # TODO: convert the host name to the corresponding IP address
+    HOST = socket.gethostbyname(hostname)
     sin = (HOST, PORT)
+
 
     # TODO: create a datagram socket for TCP
     try:
-
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
     except socket.error as e:
         print('Failed to create socket.')
         sys.exit()
 
 
-    # TODO: Bind the socket to address
+    # TODO: connect to the server
     try:
-
+        s.connect(sin)
     except socket.error as e:
-        print('Failed to bind socket.')
+        print('Failed to connect to server.')
         sys.exit()
 
+    # TODO: send the message to the server
+    try:
+        s.sendall(message.encode())
+    except socket.error as e:
+        print('Failed to send to server.')
+        sys.exit()
 
-    # TODO: start listening 
+    # TODO: receive the acknowledgement from the server
+    try:
+        ack = s.recv(BUFFER)
+    except socket.error as e:
+        print('Failed to receive from server.')
+        sys.exit()
 
-
-    # TODO: accept the connection and record the address of the client socket
-
-
-    # TODO: receive message from the client 
-
-
-    # TODO: print the message to the screen
-
-
-    # TODO: send an acknowledgement (e.g., interger of 1) to the client
-
+    # TODO: print the acknowledgement to the screen
+    ack = socket.ntohl(int(ack.decode()))
+    print(f'Acknowledgement: {ack}')
 
     # TODO: close the socket
+    try:
+        s.close()
+    except socket.error as e:
+        print('Failed to close socket.')
+        sys.exit()
 
 
 ############## End of Part 1 ##############
@@ -68,13 +81,13 @@ def part1 ():
 
 ############## Beginning of Part 2 ##############
 
+
 # main function for Part 2
 def part2 ():
-
+    print()
 
 
 ############## End of Part 2 ##############
-
 
 
 if __name__ == '__main__':
@@ -86,6 +99,4 @@ if __name__ == '__main__':
     else:
         part2()
 
-
-
-
+   
