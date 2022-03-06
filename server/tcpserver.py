@@ -24,9 +24,15 @@ BUFFER = 4096
 
 def part1 ():
     print("********** PART 1 **********")
-    # TODO: fill in the IP address of the host and the port number
-    HOST = '127.0.0.1'
-    PORT = 8000
+    # TODO: fill in the hostname and port number
+    HOSTNAME = 'student00.ischool.illinois.edu'
+    PORT = 41025
+
+    # TODO: convert the host name to the corresponding IP address
+    try:
+        HOST = socket.gethostbyname(HOSTNAME)
+    except socket.error as e:
+        print("Unknown hostname: %s" % HOSTNAME)
     sin = (HOST, PORT)
 
     # TODO: create a datagram socket for TCP
@@ -197,10 +203,15 @@ handler['UP'] = handleUP
 # main function for Part 2
 def part2 ():
     print("********** PART 2 **********")
-
-    # TODO: fill in the IP address of the host and the port number
-    HOST = '127.0.0.1'
+    # TODO: fill in the hostname and port number
+    HOSTNAME = 'student00.ischool.illinois.edu'
     PORT = int(sys.argv[1])
+
+    # TODO: convert the host name to the corresponding IP address
+    try:
+        HOST = socket.gethostbyname(HOSTNAME)
+    except socket.error as e:
+        print("Unknown hostname: %s" % HOSTNAME)
     sin = (HOST, PORT)
 
     # TODO: create a datagram socket for TCP
