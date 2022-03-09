@@ -161,18 +161,14 @@ def part2():
                 received_size = 0
 
                 with open(file_name, 'wb') as f:
-                    summ = 0
                     while received_size <= file_size:
                         try:
                             packet = s.recv(BUFFER)
                         except socket.error:
                             print('Failed to receive packet from server.')
                             sys.exit()
-                        summ += 1
                         received_size += BUFFER
                         f.write(packet)
-
-                    print(summ)
 
                 end_time = time.time()
                 time_consumed = end_time - start_time

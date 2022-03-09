@@ -181,7 +181,6 @@ def part2():
 
                     with open(file_name, 'rb') as f:
                         packet = f.read(BUFFER)
-                        summ = 0
                         while packet:
 
                             try:
@@ -189,11 +188,8 @@ def part2():
                             except socket.error:
                                 print('Failed to send packet to client.')
                                 sys.exit()
-                            summ += 1
 
                             packet = f.read(BUFFER)
-
-                        print(summ)
 
                     md5sum_server = subprocess.check_output(['md5sum', file_name])
 
