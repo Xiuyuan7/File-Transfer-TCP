@@ -15,6 +15,7 @@ import socket
 import sys
 import os
 import time
+import subprocess
 
 
 # TODO: define a buffer size for the message to be read from the TCP socket
@@ -160,20 +161,39 @@ def part2():
                 received_size = 0
 
                 with open(file_name, 'wb') as f:
-                    while received_size < file_size:
+                    summ = 0
+                    while received_size <= file_size:
                         try:
                             packet = s.recv(BUFFER)
                         except socket.error:
                             print('Failed to receive packet from server.')
                             sys.exit()
+                        summ += 1
                         received_size += BUFFER
                         f.write(packet)
 
-                end_time = time.time()
+                    print(summ)
 
+                end_time = time.time()
                 time_consumed = end_time - start_time
                 throughput = file_size / time_consumed / 2 ** 20
-                print(f'{file_size} bytes transferred in {round(time_consumed, 4)} seconds: {round(throughput, 4)} Megabytes/sec')
+
+                try:
+                    md5sum_server = s.recv(BUFFER)
+                except socket.error:
+                    print('Failed to receive file size from server.')
+                    sys.exit()
+
+                md5sum_client = subprocess.check_output(['md5sum', file_name])
+
+                if md5sum_client == md5sum_server:
+
+                    print(f'File confirmed with MD5: {md5sum_server}')
+                    print(f'{file_size} bytes transferred in {round(time_consumed, 4)} seconds: {round(throughput, 4)} Megabytes/sec')
+
+                else:
+
+                    print('MD5 hash does not match, please download again.')
 
         # TODO: handle UP command
         elif command == 'UP' and len(arguments) == 2:
@@ -195,6 +215,7 @@ def part2():
 
             if ack == '1':
                 start_time = time.time()
+
                 try:
                     s.send(f'{socket.htonl(file_size)}'.encode())
                 except socket.error:
@@ -202,25 +223,46 @@ def part2():
                     sys.exit()
 
                 with open(file_name, 'rb') as f:
-                    while True:
-                        packet = f.read(BUFFER)
-                        if not packet:
-                            break
+                    packet = f.read(BUFFER)
+                    while packet:
                         try:
                             s.send(packet)
                         except socket.error:
                             print('Failed to send packet to client.')
                             sys.exit()
+                        packet = f.read(BUFFER)
+
                 end_time = time.time()
                 time_consumed = end_time - start_time
+
                 try:
                     throughput = float(s.recv(BUFFER).decode())
                 except socket.error:
                     print('Failed to receive throughput from server.')
                     sys.exit()
 
-                print(
-                    f'{file_size} bytes transferred in {round(time_consumed, 4)} seconds: {round(throughput, 4)} Megabytes/sec')
+                md5sum_client = subprocess.check_output(['md5sum', file_name])
+
+                try:
+                    s.send(md5sum_client)
+                except socket.error:
+                    print('Failed to send md5sum to server.')
+                    sys.exit()
+
+                try:
+                    con = s.recv(BUFFER).decode()
+                except socket.error:
+                    print('Failed to receive confirmation from server.')
+                    sys.exit()
+
+                if con == '1':
+
+                    print(f'File confirmed with MD5: {md5sum_client}')
+                    print(f'{file_size} bytes transferred in {round(time_consumed, 4)} seconds: {round(throughput, 4)} Megabytes/sec')
+
+                else:
+
+                    print('MD5 hash does not match, please upload again.')
 
             else:
                 print('Server is not ready to receive the file.')

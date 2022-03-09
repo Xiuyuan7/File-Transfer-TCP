@@ -179,23 +179,29 @@ def part2():
                         print('Failed to send file size to client.')
                         sys.exit()
 
-                    try:
-                        conn.send(f'{socket.htonl(file_size)}'.encode())
-                    except socket.error:
-                        print('Failed to send file size to client.')
-                        sys.exit()
-
                     with open(file_name, 'rb') as f:
-                        while True:
-                            packet = f.read(BUFFER)
+                        packet = f.read(BUFFER)
+                        summ = 0
+                        while packet:
 
-                            if not packet:
-                                break
                             try:
                                 conn.send(packet)
                             except socket.error:
                                 print('Failed to send packet to client.')
                                 sys.exit()
+                            summ += 1
+
+                            packet = f.read(BUFFER)
+
+                        print(summ)
+
+                    md5sum_server = subprocess.check_output(['md5sum', file_name])
+
+                    try:
+                        conn.send(md5sum_server)
+                    except socket.error:
+                        print('Failed to send md5sum to client.')
+                        sys.exit()
 
                 else:
                     try:
@@ -236,6 +242,7 @@ def part2():
                             sys.exit()
                         received_size += BUFFER
                         f.write(packet)
+
                 end_time = time.time()
                 time_consumed = end_time - start_time
                 throughput = file_size / time_consumed / 2 ** 20
@@ -245,6 +252,30 @@ def part2():
                 except socket.error:
                     print('Failed to send throughput to client.')
                     sys.exit()
+
+                try:
+                    md5sum_client = conn.recv(BUFFER)
+                except socket.error:
+                    print('Failed to receive md5sum from server.')
+                    sys.exit()
+
+                md5sum_server = subprocess.check_output(['md5sum', file_name])
+
+                if md5sum_client == md5sum_server:
+
+                    try:
+                        conn.send('1'.encode())
+                    except socket.error:
+                        print('Failed to send MD5 hash confirmation to client.')
+                        sys.exit()
+
+                else:
+
+                    try:
+                        conn.send('-1'.encode())
+                    except socket.error:
+                        print('Failed to send MD5 hash confirmation to client.')
+                        sys.exit()
 
             # TODO: handle RM command
             elif command == 'RM':

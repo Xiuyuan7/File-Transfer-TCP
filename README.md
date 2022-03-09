@@ -25,7 +25,7 @@ Python 3.9.10
    2. `upload.txt`
 2. `server` folder:
    1. `tcpserve.py`
-   2. `LargeFile.mp4`
+   2. `LargeFile.pdf`
    3. `TestFile.txt`
    4. `delete.txt`
 3. `README.md`
