@@ -1,9 +1,9 @@
 # IS496: Computer Networks (Spring 2022)
 # Programming Assignment 2 - Starter Code
 # Name and Netid of each member:
-# Member 1: 
-# Member 2: 
-# Member 3: 
+# Member 1: xiuyuan7
+# Member 2: shaojun3
+# Member 3: boyu4
 
 # Note: 
 # This starter code is optional. Feel free to develop your own solution to Part 1. 
@@ -14,55 +14,54 @@
 import socket
 import sys
 import os
+import time
 
 
-############## Beginning of Part 1 ##############
 # TODO: define a buffer size for the message to be read from the TCP socket
 BUFFER = 4096
 
 
-def part1 ():
+# main function for Part 1
+def part1():
     # TODO: fill in the hostname and port number
-    HOSTNAME = 'student00.ischool.illinois.edu'
-    PORT = 41025
+    hostname = 'student00.ischool.illinois.edu'
+    port = 41025
 
     # A dummy message (in bytes) to test the code
     message = "Hello World"
 
     # TODO: convert the host name to the corresponding IP address
     try:
-        HOST = socket.gethostbyname(HOSTNAME)
-    except socket.error as e:
-        print("Unknown hostname: %s" % HOSTNAME)
-    sin = (HOST, PORT)
-
+        host = socket.gethostbyname(hostname)
+    except socket.error:
+        print("Unknown hostname: %s" % hostname)
+    sin = (host, port)
 
     # TODO: create a datagram socket for TCP
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
-    except socket.error as e:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    except socket.error:
         print('Failed to create socket.')
         sys.exit()
-
 
     # TODO: connect to the server
     try:
         s.connect(sin)
-    except socket.error as e:
+    except socket.error:
         print('Failed to connect to server.')
         sys.exit()
 
     # TODO: send the message to the server
     try:
         s.sendall(message.encode())
-    except socket.error as e:
+    except socket.error:
         print('Failed to send to server.')
         sys.exit()
 
     # TODO: receive the acknowledgement from the server
     try:
         ack = s.recv(BUFFER)
-    except socket.error as e:
+    except socket.error:
         print('Failed to receive from server.')
         sys.exit()
 
@@ -73,153 +72,41 @@ def part1 ():
     # TODO: close the socket
     try:
         s.close()
-    except socket.error as e:
+    except socket.error:
         print('Failed to close socket.')
         sys.exit()
 
 
-############## End of Part 1 ##############
-
-
-
-
-############## Beginning of Part 2 ##############
-
-handler = {}
-
-def handleLS(res, s):
-    print(res.decode())
-
-def handleRM(res, s):
-    respond = int(res.decode())
-    if respond < 0:
-        print('File does not exist.')
-    elif respond > 0:
-        confirmation = input('Are you sure you want to delete the file? "Yes" to delete, "No" to ignore.\n')
-        if confirmation.lower() == 'no' or confirmation.lower() == 'n':
-            print('Delete abandoned by the user!')
-            s.sendall(b'no')
-            s.recv(BUFFER)
-        elif confirmation.lower() == 'yes' or confirmation.lower() == 'y':
-            s.sendall(b'yes')
-            mesg = s.recv(BUFFER).decode()
-            respond1 = int(mesg)
-            if respond1 > 0:
-                print('Successfully delete the file')
-            else:
-                print('Fail to delete the file')
-        else:
-            print('wrong confirmation')
-            s.sendall(b'no')
-            s.recv(BUFFER)
-
-def handleCD(res, s):
-    respond = int(res.decode())
-    if respond == -2:
-        print('The directory does not exist on server')
-    elif respond == -1:
-        print('Error in changing directory')
-    elif respond == 1:
-        print('Changed current directory')
-
-def handleMKDIR(res, s):
-    respond = int(res.decode())
-    if respond == -2:
-        print('The directory already exists on server')
-    elif respond == -1:
-        print('Error in making directory')
-    elif respond > 0:
-        print('The directory was successfully made')
-
-def handleRMDIR(res, s):
-    respond = int(res.decode())
-    if respond == -1:
-        print("The directory does not exist on server")
-    elif respond == -2:
-        print("The directory is not empty")
-    elif respond > 0:
-        confirmation = input('Please confirm that you want to delete the directory. "Yes" to delete, "No" to ignore.\n')
-        if confirmation.lower() == 'yes' or confirmation.lower() == 'y':
-            s.sendall(b'yes')
-            respond1 = int(s.recv(BUFFER).decode())
-            if respond1 == 1:
-                print('The directory is successfully deleted')
-            else:
-                print('Fail to delete the directory')
-        elif confirmation.lower() == 'no' or confirmation.lower() == 'n':
-            print('Delete abandoned by the user')
-            s.sendall(b'no')
-            s.recv(BUFFER)
-
-def handleQ(res, s):
-    s.close()
-
-def handleUP(res, s):
-    filename = res.decode()
-    if os.path.exists(filename) and os.path.isfile(filename):
-        filesize = os.path.getsize(filename)
-        s.sendall(str(filesize).encode())
-        with open(filename, 'rb') as f:
-            l = f.read(BUFFER)
-            while l:
-                s.sendall(l)
-                l = f.read(BUFFER)
-
-
-    else:
-        s.sendall(b'-1')
-        print('File does not exist')
-
-def handleDN(res, s):
-    response = res.decode()
-    if response == '-1':
-        print('file does not exist')
-    else:
-        filesize, filename = response.split()
-        filesize = int(filesize)
-        size = 0
-
-        with open(filename, 'w+b') as f:
-            while size < filesize:
-                l = s.recv(BUFFER)
-                f.write(l)
-                size += BUFFER
-        print('file received successfully, size: {} bytes'.format(str(filesize)))
-
-handler['LS'] = handleLS
-handler['RM'] = handleRM
-handler['CD'] = handleCD
-handler['RMDIR'] = handleRMDIR
-handler['MKDIR'] = handleMKDIR
-handler['QUIT'] = handleQ
-handler['UP'] = handleUP
-handler['DN'] = handleDN
-
 # main function for Part 2
-def part2 ():
+def part2():
     print("********** PART 2 **********")
     # TODO: fill in the hostname and port number
-    HOSTNAME = sys.argv[1]
-    PORT = int(sys.argv[2])
+    hostname = sys.argv[1]
+
+    if sys.argv[2] == '41025':
+        port = int(sys.argv[2])
+    else:
+        print('Wrong port number.')
+        sys.exit()
 
     # TODO: convert the host name to the corresponding IP address
     try:
-        HOST = socket.gethostbyname(HOSTNAME)
-    except socket.error as e:
-        print("Unknown hostname: %s" % HOSTNAME)
-    sin = (HOST, PORT)
+        host = socket.gethostbyname(hostname)
+    except socket.error:
+        print("Unknown hostname: %s" % hostname)
+    sin = (host, port)
 
     # TODO: create a datagram socket for TCP
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
-    except socket.error as e:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    except socket.error:
         print('Failed to create socket.')
         sys.exit()
 
     # TODO: connect to the server
     try:
         s.connect(sin)
-    except socket.error as e:
+    except socket.error:
         print('Failed to connect to server.')
         sys.exit()
 
@@ -227,34 +114,339 @@ def part2 ():
 
     while True:
 
-        # get command from user
-        command = input('> ')
+        # get operation from user
+        operation = input('> ')
+
+        # split operation into arguments
+        arguments = operation.split()
+        if not arguments:
+            continue
+        command = arguments[0]
 
         # send command to server
         try:
-            s.sendall(command.encode())
-        except socket.error as e:
-            print('Failed to send to server.')
+            s.send(command.encode())
+        except socket.error:
+            print('Failed to send command to server.')
             sys.exit()
 
-        # receive respond from server
-        try:
-            respond = s.recv(BUFFER)
-        except socket.error as e:
-            print('Failed to receive respond from server.')
+        # TODO: handle DN command
+        if command == 'DN' and len(arguments) == 2:
+
+            file_name = arguments[1]
+
+            try:
+                s.send(file_name.encode())
+            except socket.error:
+                print('Failed to send file name to server.')
+                sys.exit()
+
+            try:
+                file_size = s.recv(BUFFER).decode()
+            except socket.error:
+                print('Failed to receive file size from server.')
+                sys.exit()
+
+            if file_size == '-1':
+
+                print('File not found.')
+                sys.exit()
+
+            else:
+
+                file_size = socket.ntohl(int(file_size))
+
+                start_time = time.time()
+                received_size = 0
+
+                with open(file_name, 'wb') as f:
+                    while received_size < file_size:
+                        try:
+                            packet = s.recv(BUFFER)
+                        except socket.error:
+                            print('Failed to receive packet from server.')
+                            sys.exit()
+                        received_size += BUFFER
+                        f.write(packet)
+
+                end_time = time.time()
+
+                time_consumed = end_time - start_time
+                throughput = file_size / time_consumed / 2 ** 20
+                print(f'{file_size} bytes transferred in {round(time_consumed, 4)} seconds: {round(throughput, 4)} Megabytes/sec')
+
+        # TODO: handle UP command
+        elif command == 'UP' and len(arguments) == 2:
+
+            file_name = arguments[1]
+            file_size = os.path.getsize(file_name)
+
+            try:
+                s.send(file_name.encode())
+            except socket.error:
+                print('Failed to send file name to server.')
+                sys.exit()
+
+            try:
+                ack = s.recv(BUFFER).decode()
+            except socket.error:
+                print('Failed to receive acknowledgment from server.')
+                sys.exit()
+
+            if ack == '1':
+                start_time = time.time()
+                try:
+                    s.send(f'{socket.htonl(file_size)}'.encode())
+                except socket.error:
+                    print('Failed to send file size to server.')
+                    sys.exit()
+
+                with open(file_name, 'rb') as f:
+                    while True:
+                        packet = f.read(BUFFER)
+                        if not packet:
+                            break
+                        try:
+                            s.send(packet)
+                        except socket.error:
+                            print('Failed to send packet to client.')
+                            sys.exit()
+                end_time = time.time()
+                time_consumed = end_time - start_time
+                try:
+                    throughput = float(s.recv(BUFFER).decode())
+                except socket.error:
+                    print('Failed to receive throughput from server.')
+                    sys.exit()
+
+                print(
+                    f'{file_size} bytes transferred in {round(time_consumed, 4)} seconds: {round(throughput, 4)} Megabytes/sec')
+
+            else:
+                print('Server is not ready to receive the file.')
+                sys.exit()
+
+        # TODO: handle RM command
+        elif command == 'RM' and len(arguments) == 2:
+
+            file_name = arguments[1]
+
+            try:
+                s.send(file_name.encode())
+            except socket.error:
+                print('Failed to send name to server.')
+                sys.exit()
+
+            try:
+                con = s.recv(BUFFER).decode()
+            except socket.error:
+                print('Failed to receive confirmation from server.')
+                sys.exit()
+
+            if con == '-1':
+
+                print('File does not exist.')
+                continue
+
+            elif con == '1':
+
+                confirmation = input('Are you sure you want to delete the file? "Yes" to delete, "No" to ignore.\n')
+
+                if confirmation == 'Yes':
+
+                    try:
+                        s.send(confirmation.encode())
+                    except socket.error:
+                        print('Failed to send confirmation to server.')
+                        sys.exit()
+
+                    try:
+                        con = int(s.recv(BUFFER).decode())
+                    except socket.error:
+                        print('Failed to receive confirmation from server.')
+                        sys.exit()
+
+                    if con == -1:
+
+                        print('File not deleted.')
+
+                    else:
+
+                        print('File deleted.')
+
+                elif confirmation == 'No':
+
+                    try:
+                        s.send(confirmation.encode())
+                    except socket.error:
+                        print('Failed to send confirmation to server.')
+                        sys.exit()
+
+                    print('Delete abandoned by the user!')
+
+                else:
+
+                    try:
+                        s.send(confirmation.encode())
+                    except socket.error:
+                        print('Failed to send confirmation to server.')
+                        sys.exit()
+
+                    print('Wrong confirmation.')
+
+        # TODO: handle LS command
+        elif command == 'LS' and len(arguments) == 1:
+
+            try:
+                listing = s.recv(BUFFER).decode()
+            except socket.error:
+                print('Failed to receive listing from server.')
+                sys.exit()
+
+            print(listing)
+
+        # TODO: handle MKDIR command
+        elif command == 'MKDIR' and len(arguments) == 2:
+
+            directory_name = arguments[1]
+
+            try:
+                s.send(directory_name.encode())
+            except socket.error:
+                print('Failed to send directory name to server.')
+                sys.exit()
+
+            try:
+                con = s.recv(BUFFER).decode()
+            except socket.error:
+                print('Failed to receive confirmation from server.')
+                sys.exit()
+
+            if con == '-2':
+
+                print('The directory already exists on server.')
+
+            elif con == '-1':
+
+                print('Error in making directory.')
+
+            else:
+
+                print('The directory was successfully made.')
+
+        # TODO: handle RMDIR command
+        elif command == 'RMDIR' and len(arguments) == 2:
+
+            directory_name = arguments[1]
+
+            try:
+                s.send(directory_name.encode())
+            except socket.error:
+                print('Failed to send directory name to server.')
+                sys.exit()
+
+            try:
+                con = s.recv(BUFFER).decode()
+            except socket.error:
+                print('Failed to receive confirmation from server.')
+                sys.exit()
+
+            if con == '-1':
+
+                print('The directory does not exist on server.')
+
+            elif con == '-2':
+
+                print('The directory is not empty')
+
+            else:
+
+                confirmation = input('Are you sure you want to remove the directory? "Yes" to remove, "No" to ignore.\n')
+
+                if confirmation == 'Yes':
+
+                    try:
+                        s.send(confirmation.encode())
+                    except socket.error:
+                        print('Failed to send confirmation to server.')
+                        sys.exit()
+
+                    try:
+                        con = int(s.recv(BUFFER).decode())
+                    except socket.error:
+                        print('Failed to receive confirmation from server.')
+                        sys.exit()
+
+                    if con == -1:
+
+                        print('Failed to delete directory.')
+
+                    else:
+
+                        print('Directory deleted.')
+
+                elif confirmation == 'No':
+
+                    try:
+                        s.send(confirmation.encode())
+                    except socket.error:
+                        print('Failed to send confirmation to server.')
+                        sys.exit()
+
+                    print('Delete abandoned by the user!')
+
+                else:
+
+                    try:
+                        s.send(confirmation.encode())
+                    except socket.error:
+                        print('Failed to send confirmation to server.')
+                        sys.exit()
+
+                    print('Wrong confirmation.')
+
+        # TODO: handle CD command
+        elif command == 'CD' and len(arguments) == 2:
+
+            directory_name = arguments[1]
+
+            try:
+                s.send(directory_name.encode())
+            except socket.error:
+                print('Failed to send directory name to server.')
+                sys.exit()
+
+            try:
+                con = s.recv(BUFFER).decode()
+            except socket.error:
+                print('Failed to receive confirmation from server.')
+                sys.exit()
+
+            if con == '-2':
+
+                print('The directory does not exist on server.')
+
+            elif con == '-1':
+
+                print('Error in changing directory.')
+
+            else:
+
+                print('Changed current directory.')
+
+        # TODO: handle QUIT command
+        elif command == 'QUIT' and len(arguments) == 1:
+
+            try:
+                s.close()
+            except socket.error:
+                print('Failed to close socket.')
+                sys.exit()
             sys.exit()
 
-        params = [respond, s]
-        handlerLabel = command.split()[0]
-        if handlerLabel not in handler:
-            print('command not found')
-            continue
-        handler[handlerLabel](*params)
-        if s.fileno() == -1:
-            break
-
-
-############## End of Part 2 ##############
+        # TODO: handle unknown command
+        else:
+            print('Command not right.')
 
 
 if __name__ == '__main__':
@@ -263,7 +455,7 @@ if __name__ == '__main__':
     # as specified in the assignment instruction. 
     if len(sys.argv) == 1:
         part1()
-    else:
+    elif len(sys.argv) == 3:
         part2()
-
-   
+    else:
+        print('Wrong number of arguments.')
