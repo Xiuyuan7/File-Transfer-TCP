@@ -25,8 +25,9 @@ Python 3.9.10
    2. `upload.txt`
 2. `server` folder:
    1. `tcpserve.py`
-   2. `TestFile.txt`
-   3. `delete.txt`
+   2. `LargeFile.mp4`
+   3. `TestFile.txt`
+   4. `delete.txt`
 3. `README.md`
 
 
@@ -37,3 +38,10 @@ Python 3.9.10
 
 2. `tcpclient.py` should be run on `student01.ischool.illinois.edu`
 3. use port number `41025`
+
+
+
+# Work
+
+1. Required part
+2. Extra credit

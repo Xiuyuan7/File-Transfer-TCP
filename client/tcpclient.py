@@ -150,7 +150,7 @@ def part2():
             if file_size == '-1':
 
                 print('File not found.')
-                sys.exit()
+                continue
 
             else:
 

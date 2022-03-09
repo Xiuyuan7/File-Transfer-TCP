@@ -169,7 +169,7 @@ def part2():
                     print('Failed to receive file name from client.')
                     sys.exit()
 
-                if os.path.exists(file_name):
+                if os.path.exists(file_name) and os.path.isfile(file_name):
 
                     file_size = os.path.getsize(file_name)
 
